@@ -21,21 +21,50 @@ package org.everit.metamodel.test;
  * MA 02110-1301  USA
  */
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.everit.metamodel.Attribute;
 import org.everit.metamodel.MetamodelUtil;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class FieldMetaModelTest {
 
     public static class AttributeClass<T> {
-        public static volatile Attribute<AttributeClass<String>, String> field1;
-        public static volatile Attribute<AttributeClass<String>, List<String>> field2;
+        public static volatile Attribute<AttributeClass<String>, String> simpleField;
+        public static volatile Attribute<AttributeClass<String>, List<String>> parameterizedField;
+        public static volatile Attribute<AttributeClass<String>, String> alreadySpecifiedField = MetamodelUtil
+                .createAttribute(AttributeClass.class, "alreadySpecifiedField", "test");
     }
 
     @Test
     public void testClassInitialization() {
-        MetamodelUtil.initClass(AttributeClass.class);
+        @SuppressWarnings("rawtypes")
+        Class<AttributeClass> attributeClass = AttributeClass.class;
+        MetamodelUtil.initClass(attributeClass);
+        try {
+            Field simpleField = attributeClass.getField("simpleField");
+            Object value = simpleField.get(null);
+            Attribute<AttributeClass<String>, String> attribute = (Attribute<AttributeClass<String>, String>) value;
+            Assert.assertEquals("simpleField", attribute.getAttributeName());
+            
+            Field alreadySpecifiedField = attributeClass.getField("alreadySpecifiedField");
+            value = alreadySpecifiedField.get(null);
+            attribute = (Attribute<AttributeClass<String>, String>) value;
+            Assert.assertEquals("test", attribute.getAttributeName());
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
     }
 }

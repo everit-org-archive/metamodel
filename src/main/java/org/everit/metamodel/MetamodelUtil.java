@@ -43,6 +43,19 @@ public final class MetamodelUtil {
             initFieldIfDeclaring(declaringField, null);
         }
     }
+    
+    public static <M, A> Attribute<M, A> createAttribute(Class<?> clazz, String declaringFieldName, String attributeName) {
+        try {
+            Field declaringField = clazz.getField(declaringFieldName);
+            return new AttributeImpl<M, A>(declaringField, attributeName);
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException("No field " + declaringFieldName + " of class " + clazz.getName());
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     private static void initFieldIfDeclaring(final Field declaringField, final String attributeName) {
         if (!isDeclaringField(declaringField)) {
